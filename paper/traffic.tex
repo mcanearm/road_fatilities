@@ -1,0 +1,102 @@
+\documentclass[12pt]{article}
+
+% fonts
+
+\usepackage[T1]{fontenc}
+\usepackage[full]{textcomp}
+\usepackage{newtxtext}
+\usepackage{cabin} % sans serif
+\usepackage[varqu,varl]{inconsolata} % sans serif typewriter
+\usepackage[final,expansion=alltext]{microtype}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage[bigdelims,vvarbb]{newtxmath} % bb from STIX
+\usepackage[cal=boondoxo]{mathalfa} % mathcal
+\usepackage{csquotes}
+
+\usepackage[backend=bibtex,style=numeric]{biblatex}
+\bibliography{traffic} % Specify your BibTeX file
+
+% geometry of the page
+
+\usepackage[top=1in,
+            bottom=1in,
+            left=1in,
+            right=1in]{geometry}
+
+
+% paragraph spacing
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2ex plus 0.4ex minus 0.2ex}
+
+
+\author{Matthew McAnear}
+\title{Traffic Fatality Risk by Advanced Safety Features}
+
+% useful packages
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    Despite the proliferation of AI technology in passenger cars of collision detection/avoidance, lane drift systems, and
+    various other safety systems, pedestrian and cyclist deaths are NOT significantly reduced by these
+    interventions. 
+\end{abstract}
+
+
+\section{Introduction}
+
+Traffic saftey is a major concern for all roadway users. The National Highway Traffic Safety Administration (NHTSA) reports
+that, as of preliminary reports for through June of 2023, traffic accidents involving fatalities, in aggregate,
+are down about 3\%. This decrease hides the true scale of the problem for non-road users, however. While the
+overall change for pedestrians is also 3\%, the baseline level of risk for pedestrians is much higher than for 
+passenger vehicles or even for pedalcyclists. Accidents involving pedestrians range anywhere from a 14\% to 
+23\% baseline fatality rate, depending on the month in question \cite{national_center_for_statistics_and_analysis_early_2024}.
+
+Among drivers in the vehicle, these fatality rates have been decreasing over time, with cars becoming
+safer for occupants of the vehicle. However, the overall fatality is influenced heavily by the mass of the 
+car\cite{evans_car_1992}. This means that there are offsetting effects of both increasing vehicle mass and increasing 
+vehicle saftey. For people outside of the vehicle, however, the statistics are alarming. According to Tyndall, 
+"between 2010 and 2021 the number of pedestrians killed annually in collisions increased by 72\%, from 4300 to 
+7400 \cite{tyndall_effect_2024}." Due to relaxed emissions standards for small trucks compared to passenger cars,
+American buyer preferences shifted toward sport utility vehicles (SUVs) and trucks \cite{kovach_rise_2021}. Taken into 
+account this connection between both the proliferation of large vehicles and the clear connection in fatality risk to
+more massive and taller vehicles\cite{tyndall_effect_2024}, finding the factors that minimize pedestrian fatalities
+is of critical importance for public health.
+
+It is common knowledge that AI systems have become an increasing part of every day life, and passenger
+vehicles are no exception. The question is if these improved safety systems are reducing the risk of fatalities
+among pedestrians and cyclists. Next, assuming these new systems yield tangible improvements to pedestrian safety,
+are the improvements large enough in magnitude to offset the increased risk from the size and height of vehicles.
+
+In this paper, we focus primarily on those factors that influence the risk of fatalities in crashes involving pedestrians
+and cyclists. We exclude from consideration crashes involving multiple vehicles and focus solely on single-vehicle 
+collisions with pedestrians and cyclists. After controlling for the effect of weather conditions,
+geographic region, and crash variables such as time of day and intersection type, we estimate the effect
+of advanged safety features on the risk of pedestrian and cyclist fatalities within vehicle types.
+
+
+\section{Data}
+
+Our data comes the 
+
+\section{Methodology}
+
+\section{Results}
+
+
+\section{Discussion}
+
+\section{Conclusion}
+
+\printbibliography
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

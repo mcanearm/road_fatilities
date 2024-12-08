@@ -162,3 +162,31 @@ cython_debug/
 #.idea/
 
 data/*
+
+# LaTeX
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+*.pdf
+*.dvi
+*.ps
+*.nav
+*.snm
+*.vrb
+*.spl
+*-blx.bib
