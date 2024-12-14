@@ -13,6 +13,7 @@
 \usepackage[bigdelims,vvarbb]{newtxmath} % bb from STIX
 \usepackage[cal=boondoxo]{mathalfa} % mathcal
 \usepackage{csquotes}
+\usepackage{graphicx}
 
 \usepackage[backend=bibtex,style=numeric]{biblatex}
 \bibliography{traffic} % Specify your BibTeX file
@@ -114,35 +115,17 @@ listed in the appendix.
 \section{Methodology}
 
 Our model will be a relatively traditional logistic regression, as we are primarily interested in inference on the 
-effects of our variables of interest and so need a model that retains interpretability. 
-
-We define our model as 
-
-\begin{align*}
-\alpha &\sim \text{Normal}(0, 3) \\
-\sigma^2 &\sim \text{Inv-Gamma}(1, 1) \\
-\alpha_{r} &\sim \text{Normal}(\alpha, \sigma^2) \\
-\tau^2 &\sim \text{Inv-Gamma}(1, 1) \\
-\beta &\sim \text{Laplace}(0, \tau^2) \\
-\beta_{j} & \sim \text{Laplace}(\beta, \tau^2) \\
-\theta_i &= \frac{1}{1 + e^{\alpha_{r_i} + X_i^T \beta_{j_i}}} \\
-Y_i &\sim \text{Bern}(\theta_i) 
-\end{align*}
-
-where $j \in \{0, 1\}$ indicates an index for pedestrians and cyclist, $r \in \{0, \dots, 3\}$ indexes the region
-of the country (Northast, Midwest, South, West), and $j_i$ indexes the $B_j$ coefficient vector according to whether a
-particular crash involved a pedestrian or a cyclist. A full accounting of which regions correspond to which states is 
-located in the appendix.
+effects of our variables of interest and so need a model that retains interpretability. However, we will
+add hierarchical structure to account both the full and group-level effects of each covariate across 
+cyclists and pedstrians. See Figure \ref{fig:model_graph} for a graphical representation of the model.
 
 We wish to estimate the effects of the variables separately for both pedestrians and cyclists, but because of our 
 relatively sparse feature space, there is some concern of wild coefficient values, so for that reason we use the 
 hierarchical model to constrain an overall effect of a feature, and then estimate whether that effect differs
-between cyclists and pedestrians. 
-
-Next, for each beta coefficient, we will estimate the effect of the safety features and bodyclass using a Laplace 
-distribution as our prior. This is equivalent to a LASSO penalty\cite{tibshirani_regression_1996}, and will help
-us to control for the sparsity of our feature space. 
-
+between cyclists and pedestrians. The overall effects considered are vehicle bodyclass, lighting conditions, weather 
+conditions, and vehicle safety features. Each beta coefficient is assumed to follow a Laplace prior. This specification 
+is equivalent to a LASSO penalty\cite{tibshirani_regression_1996}, and will help to mitigate potential model fitting
+estimates due to the sparsity of the feature space.
 
 \section{Results}
 
@@ -176,6 +159,13 @@ reveals that the impact of body cl
 -- Sum up
 
 \section{Support}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{images/model_graph.png}
+    \caption{Graphical representation of the hierarchical logistic regression model.}
+    \label{fig:model_graph}
+\end{figure}
 
 Trace-plots
 
