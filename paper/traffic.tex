@@ -54,7 +54,7 @@ that, as of preliminary reports for through June of 2023, traffic accidents invo
 are down about 3\%. This decrease hides the true scale of the problem for non-road users, however. While the
 overall change for pedestrians is also 3\%, the baseline level of risk for pedestrians is much higher than for 
 passenger vehicles or even for pedalcyclists. Accidents involving pedestrians range anywhere from a 14\% to 
-23\% baseline fatality rate, depending on the month in question \cite{national_center_for_statistics_and_analysis_early_2024}.
+23\% baseline fatality rate, depending on the month in question \cite{national_highway_traffic_safety_administration_early_2024}.
 
 Among drivers in the vehicle, these fatality rates have been decreasing over time, with cars becoming
 safer for occupants of the vehicle. However, the overall fatality is influenced heavily by the mass of the 
@@ -70,31 +70,122 @@ is of critical importance for public health.
 It is common knowledge that AI systems have become an increasing part of every day life, and passenger
 vehicles are no exception. The question is if these improved safety systems are reducing the risk of fatalities
 among pedestrians and cyclists. Next, assuming these new systems yield tangible improvements to pedestrian safety,
-are the improvements large enough in magnitude to offset the increased risk from the size and height of vehicles.
+are the improvements large enough in magnitude to offset the increased risk from the size and height of vehicles?
 
 In this paper, we focus primarily on those factors that influence the risk of fatalities in crashes involving pedestrians
-and cyclists. We exclude from consideration crashes involving multiple vehicles and focus solely on single-vehicle 
-collisions with pedestrians and cyclists. After controlling for the effect of weather conditions,
+and cyclists. After controlling for the effect of weather conditions,
 geographic region, and crash variables such as time of day and intersection type, we estimate the effect
 of advanged safety features on the risk of pedestrian and cyclist fatalities within vehicle types.
 
 
 \section{Data}
 
-Our data comes the 
+Our data comes from the US National Highway Traffic Safety Administration (NHTSA). The NHTSA collects and distributes 
+crash statistics on fatal accidents through FARS, the Fatal Accident Reporting System, and CRSS, the Crash Report 
+Sampling System. Through these two datasets, we can investigate risk factors for fatal accidents and injuries in 
+pedestrian and cyclist accidents. All files are available at 
+[the NHTSA website](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/). Several simplifying assumptions must be 
+made in order to combine the two datasets - for example, the CRSS data is taken from 60 sampling locations, not 
+nationwide, and weights are applied in order to estimate national level 
+statistics\cite{national_highway_traffic_safety_administration_crash_nodate}.  To simplify the analysis, we exclude 
+from consideration crashes involving multiple vehicles and focus solely on single-vehicle collisions with pedestrians 
+and cyclists. We also further ignore the crash group, i.e. whether the driver or cyclist was at fault, what 
+specific maneuver was being performed, or where the pedestrian happened to be in relation to the vehicle. These are 
+important characteristics to consider, but the overall sparsity of the data makes inference in small subgroups
+challenging.
+
+% The result of this subsampling is that certain information is not available at the same level of default as the 
+% fatality statistics. Namely, states in the fatal crash statistics have to be manually categorized into the 
+% same regions reported the CRSS. Beyond this, the names of the columns are slightly different, but the overall 
+% structure of the data is otherwise analogous. The dataset is fairly complex, spanning multiple files that cover the 
+% accidents, vehicles involved, specific information about the vehicles, and a host of other components. To simplify
+% the analysis, we exclude from consideration crashes involving multiple vehicles and focus solely on single-vehicle 
+% collisions with pedestrians and cyclists. 
+
+Another potential issue with the dataset is the overall level of sparsity in our features. While there is no 
+missingness for important crash level statistics such as the bodyclass of the vehicle, things like the weight class
+are missing and cannot be reliably imputed. Safety features are also missing for a large number of vehicles; to solve
+this, we assume that any safety feature not listed as "standard" is not present. Though we could simulate this data 
+conditional on other factors, this is an extension to a future analysis and out of scope for this short paper.
+
+We make some other simplifying and data cleaning steps, namely collapsing the bodyclass vehicles into broader categories,
+listed in the appendix.
 
 \section{Methodology}
 
+Our model will be a relatively traditional logistic regression, as we are primarily interested in inference on the 
+effects of our variables of interest and so need a model that retains interpretability. 
+
+We define our model as 
+
+\begin{align*}
+\alpha &\sim \text{Normal}(0, 3) \\
+\sigma^2 &\sim \text{Inv-Gamma}(1, 1) \\
+\alpha_{r} &\sim \text{Normal}(\alpha, \sigma^2) \\
+\tau^2 &\sim \text{Inv-Gamma}(1, 1) \\
+\beta &\sim \text{Laplace}(0, \tau^2) \\
+\beta_{j} & \sim \text{Laplace}(\beta, \tau^2) \\
+\theta_i &= \frac{1}{1 + e^{\alpha_{r_i} + X_i^T \beta_{j_i}}} \\
+Y_i &\sim \text{Bern}(\theta_i) 
+\end{align*}
+
+where $j \in \{0, 1\}$ indicates an index for pedestrians and cyclist, $r \in \{0, \dots, 3\}$ indexes the region
+of the country (Northast, Midwest, South, West), and $j_i$ indexes the $B_j$ coefficient vector according to whether a
+particular crash involved a pedestrian or a cyclist. A full accounting of which regions correspond to which states is 
+located in the appendix.
+
+We wish to estimate the effects of the variables separately for both pedestrians and cyclists, but because of our 
+relatively sparse feature space, there is some concern of wild coefficient values, so for that reason we use the 
+hierarchical model to constrain an overall effect of a feature, and then estimate whether that effect differs
+between cyclists and pedestrians. 
+
+Next, for each beta coefficient, we will estimate the effect of the safety features and bodyclass using a Laplace 
+distribution as our prior. This is equivalent to a LASSO penalty\cite{tibshirani_regression_1996}, and will help
+us to control for the sparsity of our feature space. 
+
+
 \section{Results}
+
+We see strong relationships across region and vulnerable road user type (cyclist or pedestrian). According to our
+model, it is generally safer to be a cyclist. The safest places to do so are ...
+
+Many of the results are exactly as one would expect, and partially align with our hypothesis. For example, the 
+coefficient on pickup trucks is strong positive for both cyclists and for pedestrians, indicating that these vehicles
+are much more likely to kill a pedestrian or cyclist compared to cars (the baseline group). There is also a general 
+trend with the weight of the vehicles. Surprisingly, compared to cars, crossovers are less likely to be 
+involved in fatal accidents with pedestrians and cyclists. 
+
+-- Weather
+
+
+-- Safety Features
+
+
+Also somewhat surprisingly, the hierarchical specification 
+reveals that the impact of body cl
 
 
 \section{Discussion}
 
+-- Strength of coefficients
+
+-- Implications
+
 \section{Conclusion}
+
+-- Sum up
+
+\section{Support}
+
+Trace-plots
+
+Prior predictive checks
 
 \printbibliography
 
 \end{document}
+
+
 
 %%% Local Variables:
 %%% mode: latex
