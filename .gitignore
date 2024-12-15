@@ -190,3 +190,4 @@ data/*
 *.vrb
 *.spl
 *-blx.bib
+analysis_files/
