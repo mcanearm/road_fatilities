@@ -104,7 +104,8 @@ To simplify the analysis, we exclude from consideration crashes involving multip
 on single-vehicle collisions with pedestrians and cyclists. We also further ignore the crash group, i.e. 
 whether the driver or cyclist was at fault, what specific maneuver was being performed, or where the pedestrian/cyclist
 was in relation to the vehicle. These are important characteristics to consider, but the overall sparsity of the data 
-makes inference in small subgroups challenging.
+makes inference in small subgroups challenging. We utilize the \texttt{scikit-learn} package for data preprocessing,
+specifically to create one-hot encodings of nearly all features\cite{pedregosa_scikit-learn_2011}.
 
 Another potential issue with the dataset is the overall level of sparsity in our features. While there is no
 missingness for important crash level statistics such as the bodyclass of the vehicle, things like the weight class
