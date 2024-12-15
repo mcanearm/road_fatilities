@@ -14,6 +14,7 @@
 \usepackage[cal=boondoxo]{mathalfa} % mathcal
 \usepackage{csquotes}
 \usepackage{graphicx}
+\usepackage{hyperref}
 
 \usepackage[backend=bibtex,style=numeric]{biblatex}
 \bibliography{traffic} % Specify your BibTeX file
@@ -85,7 +86,7 @@ Our data comes from the US National Highway Traffic Safety Administration (NHTSA
 crash statistics on fatal accidents through FARS, the Fatal Accident Reporting System, and CRSS, the Crash Report
 Sampling System. Through these two datasets, we can investigate risk factors for fatal accidents and injuries in
 pedestrian and cyclist accidents. All files are available at
-    [the NHTSA website](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/). Several simplifying assumptions must be
+[the NHTSA website](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/). Several simplifying assumptions must be
 made in order to combine the two datasets - for example, the CRSS data is taken from 60 sampling locations, not
 nationwide, and weights are applied in order to estimate national level
 statistics\cite{national_highway_traffic_safety_administration_crash_nodate}.  To simplify the analysis, we exclude
@@ -109,9 +110,6 @@ are missing and cannot be reliably imputed. Safety features are also missing for
 this, we assume that any safety feature not listed as "standard" is not present. Though we could simulate this data
 conditional on other factors, this is an extension to a future analysis and out of scope for this short paper.
 
-We make some other simplifying and data cleaning steps, namely collapsing the bodyclass vehicles into broader categories,
-listed in the appendix.
-
 \section{Methodology}
 
 Our model will be a relatively traditional logistic regression, as we are primarily interested in inference on the
@@ -123,14 +121,30 @@ We wish to estimate the effects of the variables separately for both pedestrians
 relatively sparse feature space, there is some concern of wild coefficient values, so for that reason we use the
 hierarchical model to constrain an overall effect of a feature, and then estimate whether that effect differs
 between cyclists and pedestrians. The overall effects considered are vehicle bodyclass, lighting conditions, weather
-conditions, and vehicle safety features. Each beta coefficient is assumed to follow a Laplace prior. This specification
-is equivalent to a LASSO penalty\cite{tibshirani_regression_1996}, and will help to mitigate potential model fitting
-estimates due to the sparsity of the feature space.
+conditions, and vehicle safety features. Each beta coefficient is assumed to follow a Normal prior. We re-use the 
+variability nuisance parameter for multiple levels of the hierarchy, but this simplified model fitting and prevented
+divergences in the sampling process.
+
+With so much feature sparsity, we also introduce latent discrete variables for whether to include a particular
+variable in a regression. Our posterior estimates of these variables will give us a sense of which features
+are worth including in the regression, as well as their final effect on the outcome. This allows us to mimic the 
+Bayesian Model averaging functionality of the \texttt{BMA}\cite{raftery_bma_2022} using our model specification in 
+Numpyro\cite{phan_composable_2019}. This model averaging approach sounds similar in theory to using Laplace priors 
+as specified by Tibshirani in \cite{tibshirani_regression_1996}, but in practice after trying both 
+methods, the two results are quite different. We will opt to use the model averaging approach, as this allows to 
+better handle sparsity and yields a more parsimonious model. Our prior predictive check (Figure \ref{fig:ppc}) 
+shows that this model is not overly specific and can capture the range of outcomes we are interested in. 
 
 \section{Results}
 
-We see strong relationships across region and vulnerable road user type (cyclist or pedestrian). According to our
-model, there is a roughly
+The overall fatality rate in accidents varies distinctly by region and vulnerable road user
+type (pedestrian or cyclist). As shown in \ref{fig:prob_intercepts}, the overall fatality rate
+among cyclists, irrespective of region, is only about 1\%, holding all other things constant. Surpsingly,
+there is a clear relationship between the fatality rate and the region, with pedestrians in the West, Midwest, and South
+subject to significantly higher fatality rates in accidents when compared to the Northeast. This may likely
+be due to an overall lower incidence of vehicles in the Northeast, more options for transportation away from roadways
+in major urban areas, and lower speeds in highly congested cities that are not present in other regions to the
+same degree.
 
 Many of the results are exactly as one would expect, and partially align with our hypothesis. For example, the
 coefficient on pickup trucks is strong positive for both cyclists and for pedestrians, indicating that these vehicles
@@ -150,37 +164,69 @@ worse weather actually reduces the log odds of a fatality. This could be due to 
 inclement weather, and also because we have collapsed a large variety of weather conditions into a single variable.
 
 However, controlling for these factors, it appears that our safety features have relatively small or unclear effects on
-the log-odds of a fatality. The clearest effect is the lane-departure warning system, which appears to reduce the
+the log-odds of a fatality. A marginal effect for pedestrian auto braking may be present for pedestrians, but it pales 
+in comparison to the overall magnitude of effect of vehicle size and lighting conditions.
+The clearest effect is the lane-departure warning system, which appears to reduce the
 log-odds of a fatality substantially among cyclists. Equally substantially, however, is the effect of lane-keeping
-assistance features, which appears to \textit{increase} the log-odds of a fatality among cyclists.
+assistance features, which appears to \textit{increase} the log-odds of a fatality among cyclists. 
 
 To make sure of these counterintuitive result, we should remember that the sparsity and high-proportion of missingness
 in our data inherently means that certain characteristics may suffer from multicollinearity that improperly
-assigns weight to the wrong group. This is a natural fit for a model-averaging approach, the results of which are in 
-Table \ref{table:bma_results}. Though the model fit in \texttt{R} with the \texttt{BMA} package is simpler
-than our hierarchical model, we can see that many of the features with somewhat ambiguous or counterintuitive 
-effects
-
--- Safety Features
-
-
-Also somewhat surprisingly, the hierarchical specification
-reveals that the impact of body cl
+assigns weight to the wrong group. Though we have attempted to mitigate this with the 
+model averaging approach, it is still possible that multicollinearity is biasing our results. We also see evidence
+for this in the inclusion probabilities of our features, as shown in Figure \ref{fig:inclusion_probs}. While
+several features have high inclusion probabilities that make practical sense, the exclusion of SUVs but the 
+inclusion of pickups, despite their similarity, is cause for concern.
 
 
-\section{Discussion}
+In terms of our posterior predictive checks, we can notice immediately that our overall fatality
+rate that is being estimated by our model is lower than than what is reported
+as of the preliminary results for 2024 by the NHTSA. The most likely explanation is that the dataset, as we've subsetted
+it, has systematically lower fatality rates than the overall dataset. The exclusion of accidents
+with multiple vehicles may be the culprit, as it is reasonable to suppose these accidents to involve
+multiple vehicles because they are higher speed and more dangerous. The distribution of our probabilities follows
+a multimodal shape, and this is to be expected given the sharp differences across regions
+and pedestrian types (see Figure \ref{fig:prob_dist}).
 
--- Strength of coefficients
-
--- Implications
 
 \section{Conclusion}
 
--- Sum up
+We have shown that the overall fatality rate for pedestrians and cyclists in single-vehicle car 
+crashes can be explained by several factors, many of which align with our initial hypotehsis and 
+some that do not. The involvement of a pickup truck and poor lighting conditions are important factors 
+when predicting whether a particular accident may be fatal for folks outside the car, but SUVs have no practical
+significant as estimated by the model, and crossover vehicles actually decrease the probability of a fatal accident
+as compared to cars. 
+
+However, once controlling for these factors, we find that the overall impact
+of advanced safety features is marginal at best, and evidence for their effectiveness
+can be contradictory. As hypotehsized, region, vehicle size, and conditions plays a much 
+larger role than the presence of safety features, and this research shows no unambiguous 
+evidence that adding these features to large vehicles such as pickups and work vehicles 
+will reduce the fatality for vulnerable road users in any practical sense.
 
 \section{Support}
 
-\begin{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/prior_predictive_check.png}
+    \caption{Prior predictive check for the model. We are getting a multimoddal distribution, but we 
+    also have a relatively complicated model. We are predicting probabilities on the entire
+    range from 0 to 1, so we can be reasonably confident that our model is as flexible as required.}
+    \label{fig:ppc}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+    \includegraphics[width=\textwidth]{images/prob_intercepts.png}
+    \caption{Forest plot of each group-level intercept. The intercepts are fit on log-odds,
+    but converted to probabilities for this plot.}
+    \label{fig:prob_intercepts}
+\end{figure}
+
+
+
+\begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{images/model_graph.png}
     \caption{Graphical representation of the hierarchical logistic regression model.}
@@ -188,7 +234,7 @@ reveals that the impact of body cl
 \end{figure}
 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{images/traceplot.png}
     \caption{Traceplot for all variables of interest. Note that there are no divergences and good mixing across all
@@ -198,7 +244,7 @@ reveals that the impact of body cl
 
 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{images/all_users_coefficients.png}
     \caption{Parent-level feature coefficients for variables of interest.}
@@ -206,7 +252,7 @@ reveals that the impact of body cl
 \end{figure}
 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{images/feature_coefficients.png}
     \caption{Feature coefficients for all variables of interest. The coefficients represent the change in the log-odds,
@@ -215,7 +261,24 @@ reveals that the impact of body cl
 \end{figure}
 
 
-Prior predictive checks
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/inclusion_probs.png}
+    \caption{Probability of inclusion in the linear model for a particular coefficient.}
+    \label{fig:inclusion_probs}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/prob_dist.png}
+    \caption{Distribution of estimated proabilities of fatalities for all crashes in our dataset.}
+    \label{fig:prob_dist}
+\end{figure}
+
+
+
+\clearpage
 
 \printbibliography
 
