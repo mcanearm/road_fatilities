@@ -92,23 +92,17 @@ Our data comes from the US National Highway Traffic Safety Administration (NHTSA
 crash statistics on fatal accidents through FARS, the Fatal Accident Reporting System, and CRSS, the Crash Report
 Sampling System. Through these two datasets, we can investigate risk factors for fatal accidents and injuries in
 pedestrian and cyclist accidents. All files are available at
-    [the NHTSA website](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/). Several simplifying assumptions must be
-made in order to combine the two datasets - for example, the CRSS data is taken from 60 sampling locations, not
-nationwide, and weights are applied in order to estimate national level
-statistics\cite{national_highway_traffic_safety_administration_crash_nodate}.  To simplify the analysis, we exclude
-from consideration crashes involving multiple vehicles and focus solely on single-vehicle collisions with pedestrians
-and cyclists. We also further ignore the crash group, i.e. whether the driver or cyclist was at fault, what
-specific maneuver was being performed, or where the pedestrian happened to be in relation to the vehicle. These are
-important characteristics to consider, but the overall sparsity of the data makes inference in small subgroups
-challenging.
+    [the NHTSA website](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/).  Fatal accidents and non-fatal 
+accidents are reported through two separate systems, and care must be taken when combining the two sources. For example,
+the CRSS data is taken from 60 sampling locations, not nationwide, and weights are applied in order to estimate 
+national level statistics\cite{national_highway_traffic_safety_administration_crash_nodate}. We will use these weights
+in our estimation. 
 
-% The result of this subsampling is that certain information is not available at the same level of default as the 
-% fatality statistics. Namely, states in the fatal crash statistics have to be manually categorized into the 
-% same regions reported the CRSS. Beyond this, the names of the columns are slightly different, but the overall 
-% structure of the data is otherwise analogous. The dataset is fairly complex, spanning multiple files that cover the 
-% accidents, vehicles involved, specific information about the vehicles, and a host of other components. To simplify
-% the analysis, we exclude from consideration crashes involving multiple vehicles and focus solely on single-vehicle 
-% collisions with pedestrians and cyclists. 
+To simplify the analysis, we exclude from consideration crashes involving multiple vehicles and focus solely 
+on single-vehicle collisions with pedestrians and cyclists. We also further ignore the crash group, i.e. 
+whether the driver or cyclist was at fault, what specific maneuver was being performed, or where the pedestrian/cyclist
+was in relation to the vehicle. These are important characteristics to consider, but the overall sparsity of the data 
+makes inference in small subgroups challenging.
 
 Another potential issue with the dataset is the overall level of sparsity in our features. While there is no
 missingness for important crash level statistics such as the bodyclass of the vehicle, things like the weight class
@@ -118,13 +112,17 @@ are missing and cannot be reliably imputed\footnote{
     tedious and it is unclear that it would yield improvements to our analysis.}. 
 Safety features are also missing for a large number of vehicles; to solve
 this, we assume that any safety feature not listed as "standard" is not present. Though we could simulate this data
-conditional on other factors, this is an extension to a future analysis and out of scope for this short paper.
+conditional on other factors, this is an extension to a future analysis and out of scope for this short paper. It is 
+also a clear and fundamental limitation of the dataset we are using, as there is a contradictive relationship between
+the weight of the vehicle, its price, and therefore its included safety features. If more dangerous cars are more loaded
+with safety features, it could appear that the safety features are the reason for the increased fatality rate, and so
+we must proceed with caution.
 
 \section{Methodology}
 
-Our model will be a relatively traditional logistic regression, as we are primarily interested in inference on the
-effects of our variables of interest and so need a model that retains interpretability. However, we will
-add hierarchical structure to account both the full and group-level effects of each covariate across
+We utilize a logistsic regression model, as we are primarily interested in inference on the
+effects of our variables of interest and so require a model that retains interpretability. However, we will
+add hierarchical structure to account for both the full and group-level effects of each covariate across
 cyclists and pedstrians. See Figure \ref{fig:model_graph} for a graphical representation of the model. For safety
 features in particular, we choose a choose a relatively small subset of the available features that seem 
 \textit{a priori} to be most relevant to preventing outcomes. 
@@ -133,9 +131,9 @@ We wish to estimate the effects of the variables separately for both pedestrians
 relatively sparse feature space, there is some concern of wild coefficient values, so for that reason we use the
 hierarchical model to constrain an overall effect of a feature, and then estimate whether that effect differs
 between cyclists and pedestrians. The overall effects considered are vehicle type (bodyclass), lighting and weather
-conditions, and vehicle safety features. Each beta coefficient is assumed to follow a Normal prior. We re-use the
-variability nuisance parameter for multiple levels of the hierarchy, as this simplified model fitting and prevented
-divergences in the sampling process.
+(i.e. environmental) conditions, and vehicle safety features. Each beta coefficient is assumed to follow a Normal prior. 
+We re-use the variability nuisance parameter for multiple levels of the hierarchy, as this simplified model fitting and 
+prevented divergences in the sampling process, though it may be a source of bias in our estimates.
 
 To control feature sparsity, we also introduce latent discrete variables for whether to include a particular
 variable in the regression model. Our posterior estimates of these variables will give us a sense of which features
@@ -143,7 +141,7 @@ are worth including in the regression, as well as their final effect on the outc
 Bayesian Model averaging functionality of the \texttt{BMA}\cite{raftery_bma_2022} using our model specification in
 Numpyro\cite{phan_composable_2019} along with our hierarchical model structure. This model averaging approach sounds
 similar in theory to using Laplace priors as specified by Tibshirani in \cite{tibshirani_regression_1996},
-but in practice after trying both methods, the two results are quite different. We will opt to use the model
+but after trying both methods, the two results are quite different in practice. We will opt to use the model
 averaging approach, as this allows to better handle sparsity and yields a more parsimonious model.
 Our prior predictive check (Figure \ref{fig:ppc}) shows that this model is not overly specific and can capture the
 range of outcomes we are interested in.
@@ -160,14 +158,14 @@ in major urban areas, and lower speeds in highly congested cities that are not p
 same degree.
 
 Many of the results are exactly as one would expect, and partially align with our hypothesis. For example, the
-coefficient on pickup trucks is strong positive for both cyclists and for pedestrians, indicating that these vehicles
+coefficient on pickup trucks is strongly positive for both cyclists and for pedestrians, indicating that these vehicles
 are much more likely to kill a pedestrian or cyclist compared to cars (the baseline group). See
 Figure \ref{fig:coefficients}. Many results border on the obvious - the log-odds of a fatality increase the most when
 a truck/semi are involved. The trend genereally holds that increase vehicle weight corresponds to an increasing
 likelihood of fatality for pedestrians and cyclists. Somewhat surprising is how these effects are manifested across
 vulnerable road users. For example, pickups and semis are much more likely to kill a cyclist than a pedestrian. This is
 most likely due to the nature of when and where cycling accidents take place, presumably at higher speeds on shared
-infrastructure. Unfortunately, the data is missing an estimated speed in roughly 58\% of pedestrian accidents, and so
+infrastructure. Unfortunately, the data are missing vehicle speed in roughly 58\% of the accidents in our data, and so
 use of this as a control variable may unfairly bias our results without a more thoughtful imputation scheme.
 
 Outside of the vehicle centric effects, the largest effects is by far if the accident takes place at night, shown in
@@ -176,7 +174,7 @@ Inclement weather appears to have a negative effect, such that
 worse weather actually reduces the log odds of a fatality. This could be due to drivers being more cautious in
 inclement weather, and also because we have collapsed a large variety of weather conditions into a single variable.
 
-However, controlling for these factors, it appears that our safety features have relatively small or unclear effects on
+Still, controlling for these factors, it appears that our safety features have relatively small or unclear effects on
 the log-odds of a fatality. A marginal effect for pedestrian auto braking may be present for pedestrians, but it pales
 in comparison to the overall magnitude of effect of vehicle size and lighting conditions.
 The clearest effect is the lane-departure warning system, which appears to reduce the
@@ -189,12 +187,12 @@ our coefficient estimation. Next, recall that all estimates are based on samplin
 these weights are improperly calibrated after filtering certain accidents, we could be biasing our results.
 We also see evidence for this in the inclusion probabilities of our features, as shown in 
 Figure \ref{fig:inclusion_probs}. While several features have high inclusion probabilities that make practical sense, 
-the exclusion of SUVs but the inclusion of pickups, despite their similarity, 
-is cause for concern. 
+the exclusion of SUVs but the inclusion of pickups, despite their similarity, is cause for concern, and we are 
+justified in disregarding this finding through invocation of Occam's razor until further analysis is conducted.
 
-In terms of our posterior predictive checks, we can notice immediately that our overall fatality
-rate that is being estimated by our model is lower than than what is reported
-as of the preliminary results for 2024 by the NHTSA. The most likely explanation is that the dataset, as we've subsetted
+Further proof of this can be found in our posterior predictive checks. We notice immediately that our overall fatality
+rate estimated by the model is lower than than what is reported as of the preliminary results for 2024 by the NHTSA. 
+The most likely explanation is that the dataset, as we've subsetted
 it, has systematically lower fatality rates than the overall dataset. The exclusion of accidents
 with multiple vehicles may be the culprit, as it is reasonable to suppose these accidents to involve
 multiple vehicles because they are higher speed and more dangerous. The distribution of our probabilities follows
@@ -203,7 +201,8 @@ and pedestrian types (see Figure \ref{fig:prob_dist}). Lastly, we may examine an
 Gelman et. al\cite{gelman_r-squared_2019} in Figure \ref{fig:r2_dist}. We see that no matter how we choose to interpret
 our findings, the reality is that the total variance explained by our data is well under 10\%, indicating missing factors
 from the analysis. Most notably, this is probably items such as crash group, vehicle
-speed, intersection type or roadway location, and other factors.
+speed, intersection type or roadway location, and other factors that are not included in our anlaysis for reasons
+of missingness or complexity, but are nontheless potentially more predictive than the values we have selected.
 
 \section{Conclusion}
 
