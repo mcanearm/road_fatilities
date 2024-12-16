@@ -3,6 +3,7 @@
 % fonts
 
 \usepackage{pdflscape}
+\usepackage{booktabs}
 \usepackage[T1]{fontenc}
 \usepackage[full]{textcomp}
 \usepackage{newtxtext}
@@ -114,7 +115,7 @@ are missing and cannot be reliably imputed\footnote{
     Weight class is tied to the individual car, so the median would not work in this case. The appropriate rememdy would be to  
     find the weight from the manufacturer of the vehicle for the listed options package, if available, but this is quite 
     tedious and it is unclear that it would yield improvements to our analysis.}. 
-Safety features are also missing for a large number of vehicles; to solve
+Safety features are also missing for a large number of vehicles (see Table \ref{tab:safety_sparsity}); to solve
 this, we assume that any safety feature not listed as "standard" is not present. Though we could simulate this data
 conditional on other factors, this is an extension to a future analysis and out of scope for this short paper. It is 
 also a clear and fundamental limitation of the dataset we are using, as there is a contradictive relationship between
@@ -240,6 +241,31 @@ shows no unambiguous evidence that adding these features to large vehicles such 
 and work vehicles will reduce the fatality rates for vulnerable road users in any practical sense.
 
 \section{Support}
+
+
+\begin{tabular}{lr}
+    \toprule
+     & present \\
+    \midrule
+    PEDESTRIANAUTOEMERGENCYBRAKING & 0.081 \\
+    BLINDSPOTWARNING & 0.086 \\
+    BLINDSPOTINTERVENTION & 0.006 \\
+    LANEDEPARTUREWARNING & 0.110 \\
+    LANEKEEPINGASSISTANCE & 0.095 \\
+    LANECENTERINGASSISTANCE & 0.016 \\
+    BACKUPCAMERA & 0.247 \\
+    REARCROSSTRAFFICALERT & 0.037 \\
+    REARAUTOMATICEMERGENCYBRAKING & 0.008 \\
+    ADAPTIVEDRIVINGBEAM & 0.049 \\
+    ANTILOCKBRAKESYSTEM & 0.278 \\
+    ELECTRONICSTABILITYCONTROL & 0.254 \\
+    TRACTIONCONTROL & 0.242 \\
+    AUTOPEDESTRIANALERTINGSOUND & 0.013 \\
+    \bottomrule
+    \label{tab:safety_sparsity}
+    \caption{Sparsity of safety features in our dataset. We selected a subset of these based on prior supposition
+    that they are important factors for the analysis.}
+\end{tabular}
 
 \begin{figure}[h]
     \centering
