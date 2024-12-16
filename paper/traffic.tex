@@ -87,7 +87,7 @@ geographic region, and crash variables such as time of day and intersection type
 of advanced safety features on the risk of pedestrian and cyclist fatalities within vehicle types. We hypothesize
 that advanced safety feature have limited effects on crash fatality, and that the size and weight of the vehicle are 
 the most important predictors of crash fatality. All code used in the analysis and data cleaning steps is available on
-\url{https://github.com/mcanearm/road_fatilities}
+\href{https://github.com/mcanearm/road_fatilities}{GitHub}.
 
 
 \section{Data}
@@ -95,8 +95,8 @@ the most important predictors of crash fatality. All code used in the analysis a
 Our data comes from the US National Highway Traffic Safety Administration (NHTSA). The NHTSA collects and distributes
 crash statistics on fatal accidents through FARS, the Fatal Accident Reporting System, and CRSS, the Crash Report
 Sampling System. Through these two datasets, we can investigate risk factors for fatal accidents and injuries in
-pedestrian and cyclist accidents. All files are available at
-    [the NHTSA website](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/).  Fatal accidents and non-fatal 
+pedestrian and cyclist accidents. All files are available at the
+    \href{https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/}{NHTSA website}.  Fatal accidents and non-fatal 
 accidents are reported through two separate systems, and care must be taken when combining the two sources. For example,
 the CRSS data is taken from 60 sampling locations, not nationwide, and weights are applied in order to estimate 
 national level statistics\cite{national_highway_traffic_safety_administration_crash_nodate}. We will use these weights
@@ -242,30 +242,32 @@ and work vehicles will reduce the fatality rates for vulnerable road users in an
 
 \section{Support}
 
-
-\begin{tabular}{lr}
-    \toprule
-     & present \\
-    \midrule
-    PEDESTRIANAUTOEMERGENCYBRAKING & 0.081 \\
-    BLINDSPOTWARNING & 0.086 \\
-    BLINDSPOTINTERVENTION & 0.006 \\
-    LANEDEPARTUREWARNING & 0.110 \\
-    LANEKEEPINGASSISTANCE & 0.095 \\
-    LANECENTERINGASSISTANCE & 0.016 \\
-    BACKUPCAMERA & 0.247 \\
-    REARCROSSTRAFFICALERT & 0.037 \\
-    REARAUTOMATICEMERGENCYBRAKING & 0.008 \\
-    ADAPTIVEDRIVINGBEAM & 0.049 \\
-    ANTILOCKBRAKESYSTEM & 0.278 \\
-    ELECTRONICSTABILITYCONTROL & 0.254 \\
-    TRACTIONCONTROL & 0.242 \\
-    AUTOPEDESTRIANALERTINGSOUND & 0.013 \\
-    \bottomrule
-    \label{tab:safety_sparsity}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lr}
+        \toprule
+         & Proportion Non-Missing \\
+        \midrule
+        PEDESTRIANAUTOEMERGENCYBRAKING & 0.081 \\
+        BLINDSPOTWARNING & 0.086 \\
+        BLINDSPOTINTERVENTION & 0.006 \\
+        LANEDEPARTUREWARNING & 0.110 \\
+        LANEKEEPINGASSISTANCE & 0.095 \\
+        LANECENTERINGASSISTANCE & 0.016 \\
+        BACKUPCAMERA & 0.247 \\
+        REARCROSSTRAFFICALERT & 0.037 \\
+        REARAUTOMATICEMERGENCYBRAKING & 0.008 \\
+        ADAPTIVEDRIVINGBEAM & 0.049 \\
+        ANTILOCKBRAKESYSTEM & 0.278 \\
+        ELECTRONICSTABILITYCONTROL & 0.254 \\
+        TRACTIONCONTROL & 0.242 \\
+        AUTOPEDESTRIANALERTINGSOUND & 0.013 \\
+        \bottomrule
+    \end{tabular}
     \caption{Sparsity of safety features in our dataset. We selected a subset of these based on prior supposition
     that they are important factors for the analysis.}
-\end{tabular}
+    \label{tab:safety_sparsity}
+\end{table}
 
 \begin{figure}[h]
     \centering
